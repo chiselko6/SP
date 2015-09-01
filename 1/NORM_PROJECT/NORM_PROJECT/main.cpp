@@ -1,5 +1,5 @@
 
-#include "project.h"
+#include "main.h"
 #include "resource.h"
 
 // Global variables
@@ -41,6 +41,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	int nCmdShow)
 {
 	WNDCLASSEX wcex;
+	HMENU menu, popupMenu;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -89,6 +90,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		NULL
 		);
 
+	menu = CreateMenu();
+	popupMenu = CreatePopupMenu();
+	AppendMenu(menu, MF_STRING | MF_POPUP, (UINT)popupMenu, L"Run");
+	AppendMenu(popupMenu, MF_STRING, ID_START, L"Start");
+	AppendMenu(popupMenu, MF_STRING, ID_STOP, L"Stop");
+	SetMenu(hWnd, menu);
+
 	if (!hWnd)
 	{
 		MessageBox(NULL,
@@ -98,8 +106,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		return 1;
 	}
-
-	SetTimer(hWnd, MY_TIMER, TimerPeriod, NULL);
 
 	// The parameters to ShowWindow explained:
 	// hWnd: the value returned from CreateWindow
@@ -136,16 +142,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	//case WM_LBUTTONDOWN:
-	//	// BEGIN NEW CODE
-	//{
-	//	char szFileName[MAX_PATH];
-	//	HINSTANCE hInstance = GetModuleHandle(NULL);
+		//case WM_LBUTTONDOWN:
+		//	// BEGIN NEW CODE
+		//{
+		//	char szFileName[MAX_PATH];
+		//	HINSTANCE hInstance = GetModuleHandle(NULL);
 
-	//	GetModuleFileName(hInstance, (LPWSTR)szFileName, MAX_PATH);
-	//	MessageBox(hWnd, (LPCWSTR)szFileName, L"This program is:", MB_OK | MB_ICONINFORMATION);
+		//	GetModuleFileName(hInstance, (LPWSTR)szFileName, MAX_PATH);
+		//	MessageBox(hWnd, (LPCWSTR)szFileName, L"This program is:", MB_OK | MB_ICONINFORMATION);
 
-	//}
+		//}
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 
@@ -183,6 +189,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		InvalidateRect(hWnd, 0, true);
 		break;
 	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case ID_START:
+			SetTimer(hWnd, MY_TIMER, TimerPeriod, NULL);
+			break;
+		case ID_STOP:
+			KillTimer(hWnd, MY_TIMER);
+			break;
+		}
+		
 		SetWindowText(hWnd, fluidText);
 		break;
 	case WM_DESTROY:
