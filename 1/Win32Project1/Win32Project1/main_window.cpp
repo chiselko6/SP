@@ -1,13 +1,35 @@
 
 #include "project.h"
+#include "resource.h"
 
 // Global variables
 
-// The main window class name.
+// The main window class name
 static TCHAR szWindowClass[] = _T("Win32Project1");
 
-// The string that appears in the application's title bar.
+// The string that appears in the application's title bar
 static TCHAR szTitle[] = _T("Win32Project1 Title");
+
+// The string that is moved through the window
+TCHAR fluidText[] = _T("This is fluid text");
+int fluidTextLength = 100;
+int fluidTextSize = 10;
+
+// Start point of the fluidText message
+const int LPXInitial = 500;
+const int LPYInitial = 100;
+int LPX = LPXInitial;
+int LPY = LPYInitial;
+bool XFlag = true;
+bool YFlag = true;
+
+// Timer's parameters
+int TimerPeriod = 5;
+bool TimerFlag = true;
+
+// Initial window size
+const int WindowHeight = 200;
+const int WindowWidth = 500;
 
 HINSTANCE hInst;
 HWND hWnd;
@@ -27,7 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
 	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hCursor = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szWindowClass;
@@ -60,7 +82,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		szTitle,
 		WS_SYSMENU,
 		CW_USEDEFAULT, CW_USEDEFAULT,
-		500, 200,
+		WindowWidth, WindowHeight,
 		NULL,
 		NULL,
 		hInstance,
@@ -76,6 +98,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 		return 1;
 	}
+
+	SetTimer(hWnd, MY_TIMER, TimerPeriod, NULL);
 
 	// The parameters to ShowWindow explained:
 	// hWnd: the value returned from CreateWindow
@@ -112,27 +136,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	case WM_LBUTTONDOWN:
-		// BEGIN NEW CODE
-	{
-		char szFileName[MAX_PATH];
-		HINSTANCE hInstance = GetModuleHandle(NULL);
+	//case WM_LBUTTONDOWN:
+	//	// BEGIN NEW CODE
+	//{
+	//	char szFileName[MAX_PATH];
+	//	HINSTANCE hInstance = GetModuleHandle(NULL);
 
-		GetModuleFileName(hInstance, (LPWSTR) szFileName, MAX_PATH);
-		MessageBox(hWnd, (LPCWSTR) szFileName, L"This program is:", MB_OK | MB_ICONINFORMATION);
-	}
+	//	GetModuleFileName(hInstance, (LPWSTR)szFileName, MAX_PATH);
+	//	MessageBox(hWnd, (LPCWSTR)szFileName, L"This program is:", MB_OK | MB_ICONINFORMATION);
+
+	//}
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-			
+
 		// Here your application is laid out.
 		// For this introduction, we just print out "Hello, World!"
 		// in the top left corner.
 		TextOut(hdc,
-			5, 5,
-			greeting, _tcslen(greeting));
+			LPX, LPY,
+			fluidText, _tcslen(fluidText));
+
 		// End application-specific layout section.
 
 		EndPaint(hWnd, &ps);
+		break;
+	case WM_TIMER:
+		LPX--;
+		if (LPX <= -fluidTextLength)
+		{
+			LPX = LPXInitial;
+		}
+		if (TimerFlag)
+			TimerPeriod--;
+		else
+			TimerPeriod++;
+		if (TimerPeriod <= 0 || TimerPeriod >= 40)
+		{
+			if (TimerFlag)
+				TimerPeriod++;
+			else
+				TimerPeriod--;
+			TimerFlag = !TimerFlag;
+		}
+		KillTimer(hWnd, MY_TIMER);
+		SetTimer(hWnd, MY_TIMER, TimerPeriod, NULL);
+		InvalidateRect(hWnd, 0, true);
+		break;
+	case WM_COMMAND:
+		SetWindowText(hWnd, fluidText);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
