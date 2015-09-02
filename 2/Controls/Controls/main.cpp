@@ -231,12 +231,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (res == LB_ERR)
 			{
 				SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_ADDSTRING, 1, (LPARAM)text);
-			}
-			
+			}			
 			break;
 		}
 		case IDC_BUTTON_CLEAR:
-
+			SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_RESETCONTENT, NULL, NULL);
+			SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_RESETCONTENT, NULL, NULL);
 			break;
 		case IDC_BUTTON_TO_RIGHT:
 
