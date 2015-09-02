@@ -143,7 +143,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		100,                     
 		100,                    
 		hWnd,                      
-		(HMENU) IDC_LISTBOX,
+		(HMENU) IDC_LISTBOX1,
 		hInst,                        
 		NULL);                           //user defined info
 
@@ -156,7 +156,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		100,
 		100,
 		hWnd,
-		(HMENU)IDC_LISTBOX,
+		(HMENU)IDC_LISTBOX2,
 		hInst,
 		NULL);
 
@@ -212,16 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-		//case WM_LBUTTONDOWN:
-		//	// BEGIN NEW CODE
-		//{
-		//	char szFileName[MAX_PATH];
-		//	HINSTANCE hInstance = GetModuleHandle(NULL);
-
-		//	GetModuleFileName(hInstance, (LPWSTR)szFileName, MAX_PATH);
-		//	MessageBox(hWnd, (LPCWSTR)szFileName, L"This program is:", MB_OK | MB_ICONINFORMATION);
-
-		//}
+		
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 
@@ -233,7 +224,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		
+		case IDC_BUTTON_ADD:
+		{
+			char* text = GetText();
+			int res = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_FINDSTRINGEXACT, -1, (LPARAM) text);
+			if (res == LB_ERR)
+			{
+				SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_ADDSTRING, 1, (LPARAM)text);
+			}
+			
+			break;
+		}
+		case IDC_BUTTON_CLEAR:
+
+			break;
+		case IDC_BUTTON_TO_RIGHT:
+
+			break;
+		case IDC_BUTTON_DELETE:
+
+			break;
 		}
 
 		break;
@@ -246,4 +256,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+char* GetText()
+{
+	// get text from edit:
+	int len = GetWindowTextLength(GetDlgItem(hWnd, IDC_EDIT));
+	if (len > 0)
+	{
+		int i;
+		char* buf;
+
+		buf = (char*)GlobalAlloc(GPTR, len + 1);
+		GetDlgItemText(hWnd, IDC_EDIT, (LPWSTR)buf, len + 1);
+
+		MessageBox(hWnd, (LPCWSTR)buf, L"temp", NULL);
+
+		//GlobalFree((HANDLE)buf);
+		return buf;
+	}
+	return NULL;
 }
