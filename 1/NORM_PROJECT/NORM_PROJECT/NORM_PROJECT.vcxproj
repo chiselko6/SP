@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\pen.ico" />
+    <Image Include="..\smiley-cool-icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

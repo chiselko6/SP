@@ -49,12 +49,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON2));
 	wcex.hCursor = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
+
+	//wcex.hbrBackground = CreateSolidBrush(RGB(0, 255, 179));
 
 	if (!RegisterClassEx(&wcex))
 	{

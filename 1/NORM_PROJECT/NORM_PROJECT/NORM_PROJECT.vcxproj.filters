@@ -36,5 +36,8 @@
     <Image Include="..\pen.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+    <Image Include="..\smiley-cool-icon.ico">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
   </ItemGroup>
 </Project>
