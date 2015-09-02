@@ -242,7 +242,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			break;
 		case IDC_BUTTON_DELETE:
-
+			int selectedIndex1 = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
+			int selectedIndex2 = SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_GETCURSEL, NULL, NULL);
+			if (selectedIndex1 != LB_ERR)
+			{
+				SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_DELETESTRING, NULL, NULL);
+			}
+			if (selectedIndex2 != LB_ERR)
+			{
+				SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_DELETESTRING, NULL, NULL);
+			}
 			break;
 		}
 
