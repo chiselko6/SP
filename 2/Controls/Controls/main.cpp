@@ -226,12 +226,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDC_BUTTON_ADD:
 		{
-			char* text = GetText();
-			int res = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_FINDSTRINGEXACT, -1, (LPARAM) text);
-			if (res == LB_ERR)
+			// get text from edit:
+			int len = GetWindowTextLength(GetDlgItem(hWnd, IDC_EDIT));
+			if (len > 0)
 			{
-				SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_ADDSTRING, 1, (LPARAM)text);
-			}			
+				int i;
+				char* buf;
+
+				buf = (char*)GlobalAlloc(GPTR, len + 1);
+				GetDlgItemText(hWnd, IDC_EDIT, (LPWSTR)buf, len + 1);
+
+				int index1 = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_FINDSTRINGEXACT, -1, (LPARAM)buf);
+				if (index1 == LB_ERR)
+				{
+					SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_ADDSTRING, NULL, (LPARAM)buf);
+				}
+
+				//MessageBox(hWnd, (LPCWSTR)buf, L"temp", NULL);
+
+				//GlobalFree((HANDLE)buf);
+			}
+					
 			break;
 		}
 		case IDC_BUTTON_CLEAR:
@@ -239,20 +254,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_RESETCONTENT, NULL, NULL);
 			break;
 		case IDC_BUTTON_TO_RIGHT:
-
+		{
+			int selectedIndex1 = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
+			if (selectedIndex1 == LB_ERR)
+			{
+				break;
+			}
+			char* buf = (char*)GlobalAlloc(GPTR, 255);
+			SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETTEXT, selectedIndex1, (LPARAM)buf);
+			int index2 = SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_FINDSTRINGEXACT, -1, (LPARAM)buf);
+			if (index2 == LB_ERR)
+			{
+				SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_ADDSTRING, NULL, (LPARAM)buf);
+			}
 			break;
+		}
 		case IDC_BUTTON_DELETE:
+		{
 			int selectedIndex1 = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
 			int selectedIndex2 = SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_GETCURSEL, NULL, NULL);
 			if (selectedIndex1 != LB_ERR)
 			{
-				SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_DELETESTRING, NULL, NULL);
+				SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_DELETESTRING, selectedIndex1, NULL);
 			}
 			if (selectedIndex2 != LB_ERR)
 			{
-				SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_DELETESTRING, NULL, NULL);
+				SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_DELETESTRING, selectedIndex2, NULL);
 			}
 			break;
+		}
 		}
 
 		break;
