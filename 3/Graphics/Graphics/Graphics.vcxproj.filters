@@ -32,4 +32,12 @@
       <Filter>Файлы ресурсов</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="clear.ico">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="refresh.ico">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

@@ -8,13 +8,13 @@ static TCHAR szWindowClass[] = _T("Win32Project1");
 // The string that appears in the application's title bar
 static TCHAR szTitle[] = _T("Win32Project1 Title");
 
-int WindowHeight = 1000;
-int WindowWidth = 800;
+int WindowHeight = 500;
+int WindowWidth = 500;
 
 HINSTANCE hInst;
 HWND hWnd;
-HWND hButtonDraw;
-HWND g_myStatic;
+HWND hButtonRefresh;
+HWND hButtonClear;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow) {
@@ -78,12 +78,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		return 1;
 	}
-	
-/*
-	CreateWindowW(wcex.lpszClassName, L"Pixels",
-		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-		100, 100, 250, 150, NULL, NULL, hInstance, NULL);
-*/
+
+	hButtonRefresh = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 32, 32, hWnd, (HMENU)IDC_BUTTON_REFRESH, hInst, NULL);
+	hButtonClear = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 32, 32, 32, hWnd, (HMENU)IDC_BUTTON_CLEAR, hInst, NULL);
 
 	// The parameters to ShowWindow explained:
 	// hWnd: the value returned from CreateWindow
@@ -101,24 +98,56 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	return (int)msg.wParam;
-
-	srand(time(NULL));
-
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 	WPARAM wParam, LPARAM lParam) {
 
+	static DRAWITEMSTRUCT* pdis;
+
 	switch (msg) {
-
-	case WM_PAINT:
-
-		Draw(hwnd, { 50, 50 });
-		break;
+	/*case WM_CREATE:
+		hInst = ((LPCREATESTRUCT)lParam)->hInstance;
+		break;*/
 	case WM_DRAWITEM:
-	{
+		pdis = (DRAWITEMSTRUCT*)lParam;
+		switch (pdis->CtlID)
+		{
+		case IDC_BUTTON_REFRESH:
+		{
+			RECT rect = pdis->rcItem;
+			DrawIconEx(pdis->hDC, (int) 0.5 * (rect.right - rect.left - 32), (int) 0.5 * (rect.bottom - rect.top - 32),
+				(HICON)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1)), 32, 32, 0, NULL, DI_NORMAL);
+			break;
+		}
+		case IDC_BUTTON_CLEAR:
+		{
+			RECT rect = pdis->rcItem;
+			DrawIconEx(pdis->hDC, (int) 0.5 * (rect.right - rect.left - 32), (int) 0.5 * (rect.bottom - rect.top - 32),
+				(HICON)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON2)), 32, 32, 0, NULL, DI_NORMAL);
+			break;
+		}
+		default:
+			break;
+		}
 		break;
-	}
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_BUTTON_REFRESH:
+		{
+			Draw(hWnd, { 50, 50 });
+			break;
+		}
+		case IDC_BUTTON_CLEAR:
+			InvalidateRect(hWnd, NULL, true);
+			UpdateWindow(hWnd);
+			break;
+		}
+		break;
+	case WM_PAINT:
+		//Draw(hWnd, { 50, 50 });
+		break;
 	case WM_DESTROY:
 
 		PostQuitMessage(0);
@@ -128,12 +157,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 	return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-void Draw(HWND hwnd, POINT p1) 
+void Draw(HWND hwnd, POINT p1)
 {
 	PAINTSTRUCT ps;
 	HPEN hPen;
 	HBRUSH hBrush;
-	HDC hdc = BeginPaint(hWnd, &ps);
+	HDC hdc = GetDC(hwnd);
 
 	hPen = CreatePen(PS_SOLID, 1, RGB(221, 243, 20)); SelectObject(hdc, hPen);
 	hBrush = CreateSolidBrush(RGB(221, 243, 20)); SelectObject(hdc, hBrush);
@@ -247,6 +276,6 @@ void Draw(HWND hwnd, POINT p1)
 
 	DeleteObject(hPen);
 	DeleteObject(hBrush);
-	EndPaint(hWnd, &ps);
+	//EndPaint(hwnd, &ps);
 }
 

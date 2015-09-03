@@ -87,6 +87,10 @@
   <ItemGroup>
     <ResourceCompile Include="Graphics.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="clear.ico" />
+    <Image Include="refresh.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
