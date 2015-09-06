@@ -11,20 +11,21 @@ static TCHAR szTitle[] = _T("Win32Project1 Title");
 int WindowHeight = 500;
 int WindowWidth = 500;
 
+const double PI = 3.14159265;
+
 HINSTANCE hInst;
 HWND hWnd;
+HWND hWndHands;
 HWND hButtonRefresh;
 HWND hButtonClear;
 
-struct HandRect 
-{
-	HWND hwnd;
-	int handRectWidth;
-	int handRectHeight;
-};
+
 
 HandRect hRect1;
 HandRect hRect2;
+
+HANDLE thread1;
+HANDLE thread2;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow) {
@@ -67,6 +68,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// TODO: // NULL: this application does not have a menu bar
 	// hInstance: the first parameter from WinMain
 	// NULL: not used in this application
+	
+
 	hWnd = CreateWindow(
 		szWindowClass,
 		szTitle,
@@ -90,9 +93,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	hButtonRefresh = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 32, 32, hWnd, (HMENU)IDC_BUTTON_REFRESH, hInst, NULL);
-	hButtonClear = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 32, 32, 32, hWnd, (HMENU)IDC_BUTTON_CLEAR, hInst, NULL);
+	//hButtonClear = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 32, 32, 32, hWnd, (HMENU)IDC_BUTTON_CLEAR, hInst, NULL);
 
 	init();
+
+	thread1 = CreateThread(NULL, 0, ThreadProc, &hRect1, CREATE_SUSPENDED, NULL);
+	thread2 = CreateThread(NULL, 0, ThreadProc, &hRect2, CREATE_SUSPENDED, NULL);
 
 	// The parameters to ShowWindow explained:
 	// hWnd: the value returned from CreateWindow
@@ -114,13 +120,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 void init()
 {
-	hRect1.handRectHeight = 50;
-	hRect1.handRectWidth = 100;
-
-	hRect2.handRectHeight = 50;
-	hRect2.handRectWidth = 100;
-
+	hRect1.radius = hRect2.radius = 150;
 	hRect1.hwnd = hRect2.hwnd = hWnd;
+	hRect1.deltaAngle = PI / 36 + 0.001;
+	hRect2.deltaAngle = PI / 36;
+
+	hRect1.angle = PI * 4 / 3 + PI;
+	hRect2.angle = PI * 4 / 3;
+	
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
@@ -132,34 +139,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 	/*case WM_CREATE:
 		hInst = ((LPCREATESTRUCT)lParam)->hInstance;
 		break;*/
-	case WM_DRAWITEM:
-		pdis = (DRAWITEMSTRUCT*)lParam;
-		switch (pdis->CtlID)
-		{
-		case IDC_BUTTON_REFRESH:
-		{
-			RECT rect = pdis->rcItem;
-			DrawIconEx(pdis->hDC, (int) 0.5 * (rect.right - rect.left - 32), (int) 0.5 * (rect.bottom - rect.top - 32),
-				(HICON)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1)), 32, 32, 0, NULL, DI_NORMAL);
-			break;
-		}
-		case IDC_BUTTON_CLEAR:
-		{
-			RECT rect = pdis->rcItem;
-			DrawIconEx(pdis->hDC, (int) 0.5 * (rect.right - rect.left - 32), (int) 0.5 * (rect.bottom - rect.top - 32),
-				(HICON)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON2)), 32, 32, 0, NULL, DI_NORMAL);
-			break;
-		}
-		default:
-			break;
-		}
-		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case IDC_BUTTON_REFRESH:
 		{
-			Draw(hWnd, { 50, 50 });
+			ResumeThread(thread1);
+			ResumeThread(thread2);
 			break;
 		}
 		case IDC_BUTTON_CLEAR:
@@ -169,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 		}
 		break;
 	case WM_PAINT:
-		//Draw(hWnd, { 50, 50 });
+		Draw(hWnd, { 50, 50 });
 		break;
 	case WM_DESTROY:
 
@@ -178,6 +164,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 	}
 
 	return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+DWORD WINAPI ThreadProc(LPVOID args)
+{
+	HandRect* hRect = (HandRect*)args;
+
+	while (true)
+	{
+		hRect->angle += hRect->deltaAngle;
+
+		Sleep(24);
+		InvalidateRect(hRect->hwnd, 0, TRUE);
+	}
+
+	return 0;
 }
 
 void Draw(HWND hwnd, POINT p1)
@@ -256,18 +257,20 @@ void Draw(HWND hwnd, POINT p1)
 	Ellipse(hdc, (int)bodyCenter.x - bodyWidth / 2, (int)bodyCenter.y - bodyHeight / 2,
 		(int)bodyCenter.x + bodyWidth / 2, (int)bodyCenter.y + bodyHeight / 2);
 		// hands
+	hdc = GetDC(hRect1.hwnd);
 	hPen = CreatePen(PS_SOLID, 15, RGB(221, 243, 20)); SelectObject(hdc, hPen);
 	POINT handsCenter = { (int)bodyCenter.x, (int)(double)bodyCenter.y - (double)bodyHeight / 2 * 0.7 };
-	//int handRectWidth = 100;
-	//int handRectHeight = 50;
+	hRect1.center = hRect2.center = handsCenter;
 	MoveToEx(hdc, (int)handsCenter.x, (int)handsCenter.y, NULL);
-	LineTo(hdc, (int)handsCenter.x - hRect1.handRectWidth, (int)handsCenter.y + hRect1.handRectHeight);
+	POINT endPoint = GetEndPoint(hRect1);
+	LineTo(hdc, endPoint.x , endPoint.y);
 	MoveToEx(hdc, (int)handsCenter.x, (int)handsCenter.y, NULL);
-	LineTo(hdc, (int)handsCenter.x + hRect2.handRectWidth, (int)handsCenter.y + hRect2.handRectHeight);
+	endPoint = GetEndPoint(hRect2);
+	LineTo(hdc, endPoint.x, endPoint.y);
 			// flagpole
 	int flagpoleWidth = 8;
 	int flagpoleHeight = 100;
-	POINT flagCenter = { (int)handsCenter.x + hRect2.handRectWidth, (int)handsCenter.y + hRect2.handRectHeight - flagpoleHeight / 2 };
+	POINT flagCenter = { endPoint.x, endPoint.y - flagpoleHeight / 2 };
 	hPen = CreatePen(PS_SOLID, 2, RGB(21, 54, 183)); SelectObject(hdc, hPen);
 	hBrush = CreateSolidBrush(RGB(21, 54, 183)); SelectObject(hdc, hBrush);
 	Rectangle(hdc, (int) flagCenter.x - flagpoleWidth / 2, (int) flagCenter.y - flagpoleHeight / 2, (int) flagCenter.x + flagpoleWidth / 2, (int) flagCenter.y + flagpoleHeight / 2);
@@ -286,6 +289,7 @@ void Draw(HWND hwnd, POINT p1)
 			// ----
 		// -----
 		// legs
+	hdc = GetDC(hWnd);
 	POINT legsCenter = { (int)bodyCenter.x, (int)bodyCenter.y + bodyHeight / 2 * 0.5 };
 	int legRectWidth = 50;
 	int legRectHeight = 80;
@@ -300,4 +304,13 @@ void Draw(HWND hwnd, POINT p1)
 	DeleteObject(hPen);
 	DeleteObject(hBrush);
 	//EndPaint(hwnd, &ps);
+}
+
+POINT GetEndPoint(HandRect hRect)
+{
+	POINT res = {
+		(int)((double)hRect.center.x + (double)hRect.radius * cos(hRect.angle)),
+		(int)((double)hRect.center.y + (double)hRect.radius * sin(hRect.angle))
+	};
+	return res;
 }
