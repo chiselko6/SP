@@ -242,9 +242,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_ADDSTRING, NULL, (LPARAM)buf);
 				}
 
-				//MessageBox(hWnd, (LPCWSTR)buf, L"temp", NULL);
-
-				//GlobalFree((HANDLE)buf);
 			}
 					
 			break;
