@@ -8,10 +8,13 @@
 #define ID_RADIO_1_1					101
 #define ID_RADIO_1_2					102
 #define ID_RADIO_1_3					103
+
 #define ID_RADIO_2_1					201
 #define ID_RADIO_2_2					202
 #define ID_RADIO_2_3					203
 #define ID_RADIO_2_4					204
+
+#define ID_CHECKBOX						301
 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

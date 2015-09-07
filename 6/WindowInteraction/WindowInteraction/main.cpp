@@ -75,6 +75,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		NULL
 		);
 
+	// radioGroup1
 	CreateWindow(L"button", L"Green",
 		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
 		10, 10, 80, 30, hWnd, (HMENU)ID_RADIO_1_1, hInstance, NULL);
@@ -85,6 +86,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
 		10, 50, 80, 30, hWnd, (HMENU)ID_RADIO_1_3, hInstance, NULL);
 	
+	// radioGroup2
 	CreateWindow(L"button", L"Square",
 		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
 		100, 10, 80, 30, hWnd, (HMENU)ID_RADIO_2_1, hInstance, NULL);
@@ -98,6 +100,20 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
 		100, 70, 80, 30, hWnd, (HMENU)ID_RADIO_2_4, hInstance, NULL);
 
+	// checkBox
+	CreateWindow(
+		L"button",
+		L"Draw",
+		WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
+		50,
+		110,
+		60,
+		20,
+		hWnd,
+		(HMENU)ID_CHECKBOX,
+		hInstance,
+		NULL
+		);
 
 	if (!hWnd)
 	{
@@ -116,6 +132,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		nCmdShow);
 	UpdateWindow(hWnd);
 
+	init();
+
 	// Main message loop:
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -125,6 +143,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	}
 
 	return (int)msg.wParam;
+}
+
+void init()
+{
+	SendDlgItemMessage(hWnd, ID_RADIO_1_1, BM_SETCHECK, -1, NULL);
+	SendDlgItemMessage(hWnd, ID_RADIO_2_1, BM_SETCHECK, -1, NULL);
+
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
