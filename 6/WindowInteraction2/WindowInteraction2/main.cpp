@@ -6,20 +6,22 @@
 // Global variables
 
 // The main window class name
-static TCHAR szWindowClass[] = _T("Win32Project1");
+static TCHAR szWindowClass[] = _T("window2");
 
 // The string that appears in the application's title bar
 static TCHAR szTitle[] = _T("Window Interaction win2");
 
-int WindowHeight = 700;
-int WindowWidth = 900;
+int WindowHeight = 500;
+int WindowWidth = 500;
 
 
 HINSTANCE hInst;
 HWND hWnd;
-HWND hListBox1;
-HWND hListBox2;
-HMENU hPopupMenu;
+HWND hAnotherWnd;
+UINT msgWnd;
+COPYDATASTRUCT* cds;
+const int temp = 1001;
+POINT p;
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -93,6 +95,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		nCmdShow);
 	UpdateWindow(hWnd);
 
+	init();
+
 	// Main message loop:
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -104,56 +108,64 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	return (int)msg.wParam;
 }
 
+void init()
+{
+	//hAnotherWnd = FindWindow(L"window1", NULL);
+	msgWnd = RegisterWindowMessage(L"interaction");
+}
+
+void Draw(int color, int form)
+{
+	PAINTSTRUCT ps;
+	HPEN hPen;
+	HBRUSH hBrush;
+
+	HDC hdc = GetDC(hWnd);
+
+	hPen = CreatePen(PS_SOLID, 1, RGB(221, 243, 20)); SelectObject(hdc, hPen);
+	hBrush = CreateSolidBrush(RGB(221, 243, 20)); SelectObject(hdc, hBrush);
+	// head
+	int circleRadius = 10;
+	//int xOffset = 100;
+	//int yOffset = 50;
+	Ellipse(hdc, p.x - circleRadius, p.y - circleRadius, p.x + circleRadius, p.y + circleRadius);
+	DeleteObject(hPen);
+	DeleteObject(hBrush);
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hProcess;
 
-	switch (message)
-	{
-	case WM_CONTEXTMENU:
+	if (message == msgWnd)
 	{
 
+		int color = (int)wParam / temp;
+		int form = (int)wParam % temp;
+		if (lParam)
+			Draw(color, form);
+	}
+
+	switch (message)
+	{
+	case WM_LBUTTONDOWN:
+	{
+		hAnotherWnd = FindWindow(L"window1", NULL);
+		p.x = LOWORD(lParam);
+		p.y = HIWORD(lParam);
+		PostMessage(hAnotherWnd, msgWnd, NULL, NULL);
+
+		//BroadcastSystemMessage(BSF_POSTMESSAGE, NULL, msgWnd, NULL, NULL);
 		break;
 	}
 	case WM_COMMAND:
 	{
-		/*int selectedItem = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
-		if (selectedItem != LB_ERR)
-		{
-		SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_RESETCONTENT, NULL, NULL);
-		PrintModuleList(IDs[selectedItem]);
-		}
-		switch (LOWORD(wParam))
-		{
-		case ID_IDLE:
-		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-		SetPriorityClass(hProcess, IDLE_PRIORITY_CLASS);
+		
 		break;
-		case ID_BELOW_NORMAL:
-		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-		SetPriorityClass(hProcess, BELOW_NORMAL_PRIORITY_CLASS);
-		break;
-		case ID_NORMAL:
-		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-		SetPriorityClass(hProcess, NORMAL_PRIORITY_CLASS);
-		break;
-		case ID_ABOVE_NORMAL:
-		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-		SetPriorityClass(hProcess, ABOVE_NORMAL_PRIORITY_CLASS);
-		break;
-		case ID_HIGH:
-		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-		SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-		break;
-		case ID_REALTIME:
-		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-		SetPriorityClass(hProcess, REALTIME_PRIORITY_CLASS);
-		break;
-		default:
-		break;
-		}*/
-
-		break;
+	}
+	case WM_COPYDATA:
+	{
+		cds = (COPYDATASTRUCT*)lParam;
 	}
 	case WM_DESTROY:
 		PostQuitMessage(0);

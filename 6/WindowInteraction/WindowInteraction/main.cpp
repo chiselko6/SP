@@ -6,7 +6,7 @@
 // Global variables
 
 // The main window class name
-static TCHAR szWindowClass[] = _T("Win32Project1");
+static TCHAR szWindowClass[] = _T("window1");
 
 // The string that appears in the application's title bar
 static TCHAR szTitle[] = _T("Window Interaction win1");
@@ -17,8 +17,16 @@ int WindowWidth = 300;
 
 HINSTANCE hInst;
 HWND hWnd;
+HWND hAnotherWnd;
+HWND hCheckBox;
+UINT msgWnd;
 HWND hRadio1;
 HWND hRadio2;
+COPYDATASTRUCT* cds;
+
+int color;
+int form;
+const int temp = 1001;
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -101,7 +109,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		100, 70, 80, 30, hWnd, (HMENU)ID_RADIO_2_4, hInstance, NULL);
 
 	// checkBox
-	CreateWindow(
+	hCheckBox = CreateWindow(
 		L"button",
 		L"Draw",
 		WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
@@ -149,12 +157,29 @@ void init()
 {
 	SendDlgItemMessage(hWnd, ID_RADIO_1_1, BM_SETCHECK, -1, NULL);
 	SendDlgItemMessage(hWnd, ID_RADIO_2_1, BM_SETCHECK, -1, NULL);
-
+	msgWnd = RegisterWindowMessage(L"interaction");
+	//hAnotherWnd = FindWindow(L"window2", NULL);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hProcess;
+
+	if (message == msgWnd)
+	{
+		bool toDraw = false;
+		if (BST_CHECKED == SendMessage(
+			hCheckBox,
+			BM_GETCHECK, // message to send 
+			(WPARAM)wParam, // not used; must be zero 
+			(LPARAM)lParam // not used; must be zero 
+			))
+			toDraw = true;
+		hAnotherWnd = FindWindow(L"window2", NULL);
+		PostMessage(hAnotherWnd, msgWnd, color * temp + form, toDraw);
+			//BroadcastSystemMessage(BSF_POSTMESSAGE, NULL, msgWnd, color * 1001 + form, toDraw);
+		return 0;
+	}
 
 	switch (message)
 	{
@@ -163,10 +188,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (ID_RADIO_1_1 <= LOWORD(wParam) && LOWORD(wParam) <= ID_RADIO_1_3)
 		{
 			CheckRadioButton(hWnd, ID_RADIO_1_1, ID_RADIO_1_3, LOWORD(wParam));
+			color = LOWORD(wParam);
 		}
 		if (ID_RADIO_2_1 <= LOWORD(wParam) && LOWORD(wParam) <= ID_RADIO_2_4)
 		{
 			CheckRadioButton(hWnd, ID_RADIO_2_1, ID_RADIO_2_4, LOWORD(wParam));
+			form = LOWORD(wParam);
 		}
 
 		/*int selectedItem = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
