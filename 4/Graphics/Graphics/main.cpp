@@ -16,16 +16,16 @@ const double PI = 3.14159265;
 HINSTANCE hInst;
 HWND hWnd;
 HWND hWndHands;
-HWND hButtonRefresh;
-HWND hButtonClear;
-
-
+HWND hButtonStart;
+HWND hButtonStop;
 
 HandRect hRect1;
 HandRect hRect2;
 
 HANDLE thread1;
 HANDLE thread2;
+
+bool isRun;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow) {
@@ -82,6 +82,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		NULL
 		);
 
+	hWndHands = CreateWindow(
+		szWindowClass,
+		szTitle,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		WindowWidth, WindowHeight,
+		NULL,
+		NULL,
+		hInstance,
+		NULL
+		);
+
 	if (!hWnd)
 	{
 		MessageBox(NULL,
@@ -92,8 +104,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
-	hButtonRefresh = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 32, 32, hWnd, (HMENU)IDC_BUTTON_REFRESH, hInst, NULL);
-	//hButtonClear = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 32, 32, 32, hWnd, (HMENU)IDC_BUTTON_CLEAR, hInst, NULL);
+	hButtonStart = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 32, 32, hWnd, (HMENU)IDC_BUTTON_START, hInst, NULL);
+	hButtonStop = CreateWindow(L"button", NULL, WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 40, 32, 32, hWnd, (HMENU)IDC_BUTTON_STOP, hInst, NULL);
 
 	init();
 
@@ -105,7 +117,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// nCmdShow: the fourth parameter from WinMain
 	ShowWindow(hWnd,
 		nCmdShow);
+	//ShowWindow(hWndHands,
+	//	nCmdShow);
 	UpdateWindow(hWnd);
+	//UpdateWindow(hWndHands);
+
 
 	// Main message loop:
 	MSG msg;
@@ -122,18 +138,20 @@ void init()
 {
 	hRect1.radius = hRect2.radius = 150;
 	hRect1.hwnd = hRect2.hwnd = hWnd;
-	hRect1.deltaAngle = PI / 36 + 0.001;
-	hRect2.deltaAngle = PI / 36;
+	hRect1.deltaAngle = PI / 100 + 0.01;
+	hRect2.deltaAngle = PI / 100;
 
 	hRect1.angle = PI * 4 / 3 + PI;
 	hRect2.angle = PI * 4 / 3;
 	
+	isRun = false;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 	WPARAM wParam, LPARAM lParam) {
 
 	static DRAWITEMSTRUCT* pdis;
+	PAINTSTRUCT ps;
 
 	switch (msg) {
 	/*case WM_CREATE:
@@ -142,21 +160,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case IDC_BUTTON_REFRESH:
+		case IDC_BUTTON_START:
 		{
 			ResumeThread(thread1);
 			ResumeThread(thread2);
+			isRun = true;
 			break;
 		}
-		case IDC_BUTTON_CLEAR:
-			InvalidateRect(hWnd, NULL, true);
-			UpdateWindow(hWnd);
+		case IDC_BUTTON_STOP:
+			if (!isRun)
+				break;
+			SuspendThread(thread1);
+			SuspendThread(thread2);
+			//DrawHands({ 150, 150 }, GetDC(hRect1.hwnd));
+			isRun = false;
 			break;
 		}
 		break;
 	case WM_PAINT:
-		Draw(hWnd, { 50, 50 });
+	{
+		
+		HDC hdc = BeginPaint(hWnd, &ps);
+		Draw(hWnd, { 50, 50 }, hdc);
+		//DrawHands({ 150, 150 }, hdc);
+		EndPaint(hWnd, &ps);
 		break;
+	}
 	case WM_DESTROY:
 
 		PostQuitMessage(0);
@@ -174,19 +203,18 @@ DWORD WINAPI ThreadProc(LPVOID args)
 	{
 		hRect->angle += hRect->deltaAngle;
 
-		Sleep(24);
+		Sleep(15);
 		InvalidateRect(hRect->hwnd, 0, TRUE);
 	}
 
 	return 0;
 }
 
-void Draw(HWND hwnd, POINT p1)
+void Draw(HWND hwnd, POINT p1, HDC hdc)
 {
 	PAINTSTRUCT ps;
 	HPEN hPen;
 	HBRUSH hBrush;
-	HDC hdc = GetDC(hwnd);
 
 	hPen = CreatePen(PS_SOLID, 1, RGB(221, 243, 20)); SelectObject(hdc, hPen);
 	hBrush = CreateSolidBrush(RGB(221, 243, 20)); SelectObject(hdc, hBrush);
@@ -258,35 +286,8 @@ void Draw(HWND hwnd, POINT p1)
 		(int)bodyCenter.x + bodyWidth / 2, (int)bodyCenter.y + bodyHeight / 2);
 		// hands
 	hdc = GetDC(hRect1.hwnd);
-	hPen = CreatePen(PS_SOLID, 15, RGB(221, 243, 20)); SelectObject(hdc, hPen);
 	POINT handsCenter = { (int)bodyCenter.x, (int)(double)bodyCenter.y - (double)bodyHeight / 2 * 0.7 };
-	hRect1.center = hRect2.center = handsCenter;
-	MoveToEx(hdc, (int)handsCenter.x, (int)handsCenter.y, NULL);
-	POINT endPoint = GetEndPoint(hRect1);
-	LineTo(hdc, endPoint.x , endPoint.y);
-	MoveToEx(hdc, (int)handsCenter.x, (int)handsCenter.y, NULL);
-	endPoint = GetEndPoint(hRect2);
-	LineTo(hdc, endPoint.x, endPoint.y);
-			// flagpole
-	int flagpoleWidth = 8;
-	int flagpoleHeight = 100;
-	POINT flagCenter = { endPoint.x, endPoint.y - flagpoleHeight / 2 };
-	hPen = CreatePen(PS_SOLID, 2, RGB(21, 54, 183)); SelectObject(hdc, hPen);
-	hBrush = CreateSolidBrush(RGB(21, 54, 183)); SelectObject(hdc, hBrush);
-	Rectangle(hdc, (int) flagCenter.x - flagpoleWidth / 2, (int) flagCenter.y - flagpoleHeight / 2, (int) flagCenter.x + flagpoleWidth / 2, (int) flagCenter.y + flagpoleHeight / 2);
-				// flag
-	int flagWidth = 60;
-	int flagHeight = flagpoleHeight * 0.4;
-	POINT pointsFlag[3] = {
-		{ (int)flagCenter.x - flagpoleWidth / 2, (int)flagCenter.y - flagpoleHeight / 2 },
-		{ (int)flagCenter.x - flagpoleWidth / 2 + flagWidth, (int)flagCenter.y - flagpoleHeight / 2 + flagHeight / 2 },
-		{ (int)flagCenter.x - flagpoleWidth / 2, (int)flagCenter.y - flagpoleHeight / 2 + flagHeight }
-	};
-	hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0)); SelectObject(hdc, hPen);
-	hBrush = CreateSolidBrush(RGB(255, 0, 0)); SelectObject(hdc, hBrush);
-	Polygon(hdc, pointsFlag, 3);
-				// ---------
-			// ----
+	DrawHands(handsCenter, hdc);
 		// -----
 		// legs
 	hdc = GetDC(hWnd);
@@ -313,4 +314,37 @@ POINT GetEndPoint(HandRect hRect)
 		(int)((double)hRect.center.y + (double)hRect.radius * sin(hRect.angle))
 	};
 	return res;
+}
+
+void DrawHands(POINT handsCenter, HDC hdc)
+{
+	HPEN hPen = CreatePen(PS_SOLID, 15, RGB(221, 243, 20)); SelectObject(hdc, hPen);
+	//POINT handsCenter = { (int)bodyCenter.x, (int)(double)bodyCenter.y - (double)bodyHeight / 2 * 0.7 };
+	hRect1.center = hRect2.center = handsCenter;
+	MoveToEx(hdc, (int)handsCenter.x, (int)handsCenter.y, NULL);
+	POINT endPoint = GetEndPoint(hRect1);
+	LineTo(hdc, endPoint.x, endPoint.y);
+	MoveToEx(hdc, (int)handsCenter.x, (int)handsCenter.y, NULL);
+	endPoint = GetEndPoint(hRect2);
+	LineTo(hdc, endPoint.x, endPoint.y);
+	// flagpole
+	int flagpoleWidth = 8;
+	int flagpoleHeight = 100;
+	POINT flagCenter = { endPoint.x, endPoint.y - flagpoleHeight / 2 };
+	hPen = CreatePen(PS_SOLID, 2, RGB(21, 54, 183)); SelectObject(hdc, hPen);
+	HBRUSH hBrush = CreateSolidBrush(RGB(21, 54, 183)); SelectObject(hdc, hBrush);
+	Rectangle(hdc, (int)flagCenter.x - flagpoleWidth / 2, (int)flagCenter.y - flagpoleHeight / 2, (int)flagCenter.x + flagpoleWidth / 2, (int)flagCenter.y + flagpoleHeight / 2);
+	// flag
+	int flagWidth = 60;
+	int flagHeight = flagpoleHeight * 0.4;
+	POINT pointsFlag[3] = {
+		{ (int)flagCenter.x - flagpoleWidth / 2, (int)flagCenter.y - flagpoleHeight / 2 },
+		{ (int)flagCenter.x - flagpoleWidth / 2 + flagWidth, (int)flagCenter.y - flagpoleHeight / 2 + flagHeight / 2 },
+		{ (int)flagCenter.x - flagpoleWidth / 2, (int)flagCenter.y - flagpoleHeight / 2 + flagHeight }
+	};
+	hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0)); SelectObject(hdc, hPen);
+	hBrush = CreateSolidBrush(RGB(255, 0, 0)); SelectObject(hdc, hBrush);
+	Polygon(hdc, pointsFlag, 3);
+	// ---------
+	// ----
 }

@@ -17,8 +17,8 @@ struct HandRect
 };
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-void Draw(HWND hwnd, POINT p1);
+void Draw(HWND hwnd, POINT p1, HDC hdc);
 void init();
 DWORD WINAPI ThreadProc(LPVOID args);
 POINT GetEndPoint(HandRect hRect);
-
+void DrawHands(POINT handsCenter, HDC hdc);
