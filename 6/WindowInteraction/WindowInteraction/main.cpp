@@ -11,12 +11,14 @@ static TCHAR szWindowClass[] = _T("Win32Project1");
 // The string that appears in the application's title bar
 static TCHAR szTitle[] = _T("Window Interaction win1");
 
-int WindowHeight = 700;
-int WindowWidth = 900;
+int WindowHeight = 200;
+int WindowWidth = 300;
 
 
 HINSTANCE hInst;
 HWND hWnd;
+HWND hRadio1;
+HWND hRadio2;
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -73,6 +75,30 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		NULL
 		);
 
+	CreateWindow(L"button", L"Green",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		10, 10, 80, 30, hWnd, (HMENU)ID_RADIO_1_1, hInstance, NULL);
+	CreateWindow(L"button", L"Red",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		10, 30, 80, 30, hWnd, (HMENU)ID_RADIO_1_2, hInstance, NULL);
+	CreateWindow(L"button", L"Blue",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		10, 50, 80, 30, hWnd, (HMENU)ID_RADIO_1_3, hInstance, NULL);
+	
+	CreateWindow(L"button", L"Square",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		100, 10, 80, 30, hWnd, (HMENU)ID_RADIO_2_1, hInstance, NULL);
+	CreateWindow(L"button", L"Romb",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		100, 30, 80, 30, hWnd, (HMENU)ID_RADIO_2_2, hInstance, NULL);
+	CreateWindow(L"button", L"Circle",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		100, 50, 80, 30, hWnd, (HMENU)ID_RADIO_2_3, hInstance, NULL);
+	CreateWindow(L"button", L"Star",
+		WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON,
+		100, 70, 80, 30, hWnd, (HMENU)ID_RADIO_2_4, hInstance, NULL);
+
+
 	if (!hWnd)
 	{
 		MessageBox(NULL,
@@ -107,13 +133,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	case WM_CONTEXTMENU:
-	{
-		
-		break;
-	}
 	case WM_COMMAND:
 	{
+		if (ID_RADIO_1_1 <= LOWORD(wParam) && LOWORD(wParam) <= ID_RADIO_1_3)
+		{
+			CheckRadioButton(hWnd, ID_RADIO_1_1, ID_RADIO_1_3, LOWORD(wParam));
+		}
+		if (ID_RADIO_2_1 <= LOWORD(wParam) && LOWORD(wParam) <= ID_RADIO_2_4)
+		{
+			CheckRadioButton(hWnd, ID_RADIO_2_1, ID_RADIO_2_4, LOWORD(wParam));
+		}
+
 		/*int selectedItem = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
 		if (selectedItem != LB_ERR)
 		{
