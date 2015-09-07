@@ -121,14 +121,70 @@ void Draw(int color, int form)
 	HBRUSH hBrush;
 
 	HDC hdc = GetDC(hWnd);
+	COLORREF _color;
 
-	hPen = CreatePen(PS_SOLID, 1, RGB(221, 243, 20)); SelectObject(hdc, hPen);
-	hBrush = CreateSolidBrush(RGB(221, 243, 20)); SelectObject(hdc, hBrush);
+	switch (color)
+	{
+	case ID_RADIO_1_1:
+	{
+		_color = RGB(0, 255, 0);
+		break;
+	}case ID_RADIO_1_2:
+	{
+		_color = RGB(255, 0, 0);
+		break;
+	}case ID_RADIO_1_3:
+	{
+		_color = RGB(0, 0, 255);
+		break;
+	}
+	}
+
+	hPen = CreatePen(PS_SOLID, 1, _color); SelectObject(hdc, hPen);
+	hBrush = CreateSolidBrush(_color); SelectObject(hdc, hBrush);
 	// head
 	int circleRadius = 10;
-	//int xOffset = 100;
-	//int yOffset = 50;
-	Ellipse(hdc, p.x - circleRadius, p.y - circleRadius, p.x + circleRadius, p.y + circleRadius);
+	int squareSize = 30;
+	int rhombusSize = 30;
+	int starSize = 30;
+	switch (form)
+	{
+	case ID_RADIO_2_1:
+	{
+		Rectangle(hdc, p.x - squareSize / 2, p.y - squareSize / 2, p.x + squareSize / 2, p.y + squareSize / 2);
+		break;
+	}
+	case ID_RADIO_2_2:
+	{
+		POINT points[4];
+		points[0] = { p.x - rhombusSize / 2, p.y };
+		points[1] = { p.x, p.y - rhombusSize / 2 };
+		points[2] = { p.x + rhombusSize / 2, p.y };
+		points[3] = { p.x, p.y + rhombusSize / 2 };
+		Polygon(hdc, points, 4);
+		break;
+	}
+	case ID_RADIO_2_3:
+	{
+		Ellipse(hdc, p.x - circleRadius, p.y - circleRadius, p.x + circleRadius, p.y + circleRadius);
+		break;
+	}
+	case ID_RADIO_2_4:
+	{
+		POINT points[8];
+		points[0] = { p.x - starSize / 2, p.y };
+		points[1] = { p.x - starSize / 9, p.y - starSize / 9 };
+		points[2] = { p.x, p.y - starSize / 2 };
+		points[3] = { p.x + starSize / 9, p.y - starSize / 9 };
+		points[4] = { p.x + starSize / 2, p.y };
+		points[5] = { p.x + starSize / 9, p.y + starSize / 9 };
+		points[6] = { p.x, p.y + starSize / 2 };
+		points[7] = { p.x - starSize / 9, p.y + starSize / 9 };
+		Polygon(hdc, points, 8);
+		break;
+	}
+	}
+	
 	DeleteObject(hPen);
 	DeleteObject(hBrush);
 }

@@ -157,8 +157,9 @@ void init()
 {
 	SendDlgItemMessage(hWnd, ID_RADIO_1_1, BM_SETCHECK, -1, NULL);
 	SendDlgItemMessage(hWnd, ID_RADIO_2_1, BM_SETCHECK, -1, NULL);
+	color = ID_RADIO_1_1;
+	form = ID_RADIO_2_1;
 	msgWnd = RegisterWindowMessage(L"interaction");
-	//hAnotherWnd = FindWindow(L"window2", NULL);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -170,14 +171,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		bool toDraw = false;
 		if (BST_CHECKED == SendMessage(
 			hCheckBox,
-			BM_GETCHECK, // message to send 
-			(WPARAM)wParam, // not used; must be zero 
-			(LPARAM)lParam // not used; must be zero 
+			BM_GETCHECK,
+			(WPARAM)wParam, 
+			(LPARAM)lParam 
 			))
 			toDraw = true;
 		hAnotherWnd = FindWindow(L"window2", NULL);
 		PostMessage(hAnotherWnd, msgWnd, color * temp + form, toDraw);
-			//BroadcastSystemMessage(BSF_POSTMESSAGE, NULL, msgWnd, color * 1001 + form, toDraw);
 		return 0;
 	}
 
@@ -195,43 +195,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CheckRadioButton(hWnd, ID_RADIO_2_1, ID_RADIO_2_4, LOWORD(wParam));
 			form = LOWORD(wParam);
 		}
-
-		/*int selectedItem = SendDlgItemMessage(hWnd, IDC_LISTBOX1, LB_GETCURSEL, NULL, NULL);
-		if (selectedItem != LB_ERR)
-		{
-			SendDlgItemMessage(hWnd, IDC_LISTBOX2, LB_RESETCONTENT, NULL, NULL);
-			PrintModuleList(IDs[selectedItem]);
-		}
-		switch (LOWORD(wParam))
-		{
-		case ID_IDLE:
-			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-			SetPriorityClass(hProcess, IDLE_PRIORITY_CLASS);
-			break;
-		case ID_BELOW_NORMAL:
-			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-			SetPriorityClass(hProcess, BELOW_NORMAL_PRIORITY_CLASS);
-			break;
-		case ID_NORMAL:
-			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-			SetPriorityClass(hProcess, NORMAL_PRIORITY_CLASS);
-			break;
-		case ID_ABOVE_NORMAL:
-			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-			SetPriorityClass(hProcess, ABOVE_NORMAL_PRIORITY_CLASS);
-			break;
-		case ID_HIGH:
-			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-			SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-			break;
-		case ID_REALTIME:
-			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, IDs[selectedItem]);
-			SetPriorityClass(hProcess, REALTIME_PRIORITY_CLASS);
-			break;
-		default:
-			break;
-		}*/
-
 		break;
 	}
 	case WM_DESTROY:
